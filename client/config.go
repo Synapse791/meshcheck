@@ -2,7 +2,8 @@ package client
 
 import (
 	"os"
-	"encoding/json"
+	"bufio"
+	"strings"
 )
 
 type Config struct {
@@ -11,25 +12,41 @@ type Config struct {
 }
 
 type Connection struct {
-	IpAddress	string	`json:"ip"`
-	Port		int		`json:"port"`
+	IpAddress	string
+	Port		string
 }
 
 func ReadConfigFile() (Config, error) {
 
 	var config Config
-	config.FilePath = "/etc/meshcheck/connections.json"
+	config.FilePath = "/etc/meshcheck/conf/connections"
 
 	if _, err := os.Stat(config.FilePath); os.IsNotExist(err) {
 		return config, err
 	}
 
 	// TODO: error handling
-	file, _ := os.Open(config.FilePath)
+	file, fileErr := os.Open(config.FilePath)
 
-	decoder := json.NewDecoder(file)
+	if fileErr != nil {
+		return config, fileErr
+	}
 
-	decoder.Decode(&config)
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+
+	for scanner.Scan() {
+		var conn Connection
+
+		data := strings.Split(scanner.Text(), ":")
+
+		conn.IpAddress = data[0]
+		conn.Port      = data[1]
+
+		config.Connections = append(config.Connections, conn)
+
+	}
 
 	return config, nil
 }

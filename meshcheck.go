@@ -2,6 +2,8 @@ package main
 
 import (
 	"os"
+	"encoding/json"
+	"github.com/Synapse791/meshcheck/logger"
 	"github.com/Synapse791/meshcheck/client"
 	"github.com/Synapse791/meshcheck/server"
 )
@@ -10,18 +12,18 @@ func main() {
 	args := os.Args[1:]
 
 	if len(args) < 1 {
-		LogFatal("Must specify client or server mode")
+		logger.Fatal("Must specify client or server mode")
 	}
 
 	mode := args[0]
 
 	if mode == "client" {
-		LogInfo(client.GetHelp())
+		logger.Info(client.GetInitMessage())
 		TempFunc()
 	} else if mode == "server" {
-		LogInfo(server.GetHelp())
+		logger.Info(server.GetHelp())
 	} else {
-		LogFatal("Invalid mode {client|server}")
+		logger.Fatal("Invalid mode {client|server}")
 	}
 }
 
@@ -29,9 +31,19 @@ func TempFunc() {
 	config, err := client.ReadConfigFile()
 
 	if err != nil {
-		LogFatal("failed to read config file '" + config.FilePath + "'")
+		logger.Fatal("Failed to read config file '" + config.FilePath + "'")
+	} else {
+		logger.Info("Config set")
 	}
 
-	LogInfo(config.Connections[0].IpAddress)
+	c := client.NewClient()
 
+	c.ScanPorts(config)
+
+	output, jsonErr := json.Marshal(c.Response)
+	if jsonErr != nil {
+		logger.Fatal("Failed to encode response")
+	}
+
+	logger.Info("returning JSON response: " + string(output))
 }
