@@ -2,7 +2,6 @@ package main
 
 import (
 	"os"
-	"encoding/json"
 	"github.com/Synapse791/meshcheck/logger"
 	"github.com/Synapse791/meshcheck/client"
 	"github.com/Synapse791/meshcheck/server"
@@ -38,12 +37,6 @@ func TempFunc() {
 
 	c := client.NewClient()
 
-	c.ScanPorts(config)
-
-	output, jsonErr := json.Marshal(c.Response)
-	if jsonErr != nil {
-		logger.Fatal("Failed to encode response")
-	}
-
-	logger.Info("returning JSON response: " + string(output))
+	c.Config = config
+	c.Listen()
 }

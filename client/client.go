@@ -1,12 +1,16 @@
 package client
 
 import (
+	"fmt"
 	"net"
+	"net/http"
 	"github.com/Synapse791/meshcheck/logger"
+	"encoding/json"
 )
 
 type Client struct {
-	Response Response
+	Config		Config
+	Response	Response
 }
 
 type Response struct {
@@ -22,9 +26,31 @@ func NewClient() *Client {
 	return &Client{}
 }
 
-func (c *Client) ScanPorts(config Config) {
+func (c Client) Listen() {
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request){
 
-	for _, connection := range config.Connections {
+
+		c.ScanPorts()
+
+		output, err := json.Marshal(c.Response)
+		if err != nil {
+			logger.Warning("Failed to encode response")
+			return
+		}
+
+		fmt.Fprint(w, string(output))
+
+		c.Response.Errors = []string{}
+	})
+
+	logger.Info("Listening on port 6600")
+
+	http.ListenAndServe(":6600", nil)
+}
+
+func (c *Client) ScanPorts() {
+
+	for _, connection := range c.Config.Connections {
 		address := c.BuildAddress(connection.IpAddress, connection.Port)
 
 		logger.Info("Checking " + address)
