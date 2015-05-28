@@ -16,10 +16,10 @@ type Connection struct {
 	Port		string
 }
 
-func ReadConfigFile() (Config, error) {
+func ReadConfigFile(dir string) (Config, error) {
 
 	var config Config
-	config.FilePath = "/etc/meshcheck/conf/connections"
+	config.FilePath = dir + "/connections"
 
 	if _, err := os.Stat(config.FilePath); os.IsNotExist(err) {
 		return config, err

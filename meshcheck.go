@@ -10,33 +10,33 @@ import (
 func main() {
 	args := os.Args[1:]
 
-	if len(args) < 1 {
-		logger.Fatal("Must specify client or server mode")
+	if len(args) != 2 {
+		logger.Fatal("Missing arguments. Must pass mode and config directory. Example: meshcheck client /etc/meshcheck/conf")
 	}
 
 	mode := args[0]
+	configDir := args[1]
 
 	if mode == "client" {
 		logger.Info(client.GetInitMessage())
-		TempFunc()
+
+		config, err := client.ReadConfigFile(configDir)
+
+		if err != nil {
+			logger.Fatal("Failed to read config file '" + config.FilePath + "'")
+		} else {
+			logger.Info("Config set")
+		}
+
+		c := client.NewClient()
+
+		c.Config = config
+		c.Listen()
+
 	} else if mode == "server" {
 		logger.Info(server.GetHelp())
 	} else {
 		logger.Fatal("Invalid mode {client|server}")
 	}
-}
 
-func TempFunc() {
-	config, err := client.ReadConfigFile()
-
-	if err != nil {
-		logger.Fatal("Failed to read config file '" + config.FilePath + "'")
-	} else {
-		logger.Info("Config set")
-	}
-
-	c := client.NewClient()
-
-	c.Config = config
-	c.Listen()
 }
