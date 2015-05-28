@@ -35,7 +35,7 @@ func main() {
 		c.Listen()
 
 	} else if mode == "server" {
-		logger.Info(server.GetHelp())
+		logger.Info(server.GetInitMessage())
 	} else {
 		logger.Fatal("Invalid mode {client|server}")
 	}
