@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"github.com/Synapse791/meshcheck/config"
 	"github.com/Synapse791/meshcheck/logger"
 	"encoding/json"
 )
 
 type Client struct {
-	Config		Config
+	Config		config.ClientConfig
 }
 
 type Response struct {
@@ -40,23 +41,21 @@ func (c Client) Listen() {
 
 	})
 
-	logger.Info("Listening on port 6600")
+	logger.Info("Listening on port " + c.Config.Port)
 
-	http.ListenAndServe(":6600", nil)
+	http.ListenAndServe(c.Config.Port, nil)
 }
 
 func (c *Client) ScanPorts() *Response {
 
 	resp := &Response{}
 
-	for _, connection := range c.Config.Connections {
-		address := c.BuildAddress(connection.IpAddress, connection.Port)
-
+	for _, address := range c.Config.Connections {
 		logger.Info("Checking " + address)
 		check := c.CheckConnection(address)
 
 		if !check {
-			resp.Errors = append(resp.Errors, "Connection " + connection.IpAddress + ":" + connection.Port + " failed")
+			resp.Errors = append(resp.Errors, "Connection " + address + " failed")
 		}
 	}
 
