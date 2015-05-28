@@ -25,7 +25,6 @@ func ReadConfigFile() (Config, error) {
 		return config, err
 	}
 
-	// TODO: error handling
 	file, fileErr := os.Open(config.FilePath)
 
 	if fileErr != nil {
