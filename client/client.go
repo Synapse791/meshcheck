@@ -10,7 +10,6 @@ import (
 
 type Client struct {
 	Config		Config
-	Response	Response
 }
 
 type Response struct {
@@ -29,10 +28,9 @@ func NewClient() *Client {
 func (c Client) Listen() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request){
 
+		response := c.ScanPorts()
 
-		c.ScanPorts()
-
-		output, err := json.Marshal(c.Response)
+		output, err := json.Marshal(response)
 		if err != nil {
 			logger.Warning("Failed to encode response")
 			return
@@ -40,7 +38,6 @@ func (c Client) Listen() {
 
 		fmt.Fprint(w, string(output))
 
-		c.Response.Errors = []string{}
 	})
 
 	logger.Info("Listening on port 6600")
@@ -48,7 +45,9 @@ func (c Client) Listen() {
 	http.ListenAndServe(":6600", nil)
 }
 
-func (c *Client) ScanPorts() {
+func (c *Client) ScanPorts() *Response {
+
+	resp := &Response{}
 
 	for _, connection := range c.Config.Connections {
 		address := c.BuildAddress(connection.IpAddress, connection.Port)
@@ -57,15 +56,17 @@ func (c *Client) ScanPorts() {
 		check := c.CheckConnection(address)
 
 		if !check {
-			c.Response.Errors = append(c.Response.Errors, "Connection " + connection.IpAddress + ":" + connection.Port + " failed")
+			resp.Errors = append(resp.Errors, "Connection " + connection.IpAddress + ":" + connection.Port + " failed")
 		}
 	}
 
-	if len(c.Response.Errors) > 0 {
-		c.Response.Success = false
+	if len(resp.Errors) > 0 {
+		resp.Success = false
 	} else {
-		c.Response.Success = true
+		resp.Success = true
 	}
+
+	return resp
 
 }
 
