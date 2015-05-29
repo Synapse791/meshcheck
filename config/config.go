@@ -27,6 +27,29 @@ func GetClientConfig(dir string) (AppConfig, error) {
 
 	config.Mode = "client"
 
+	if err := SetConfig(dir, &config); err != nil {
+		return config, err
+	}
+
+	return config, nil
+
+}
+
+func GetServerConfig(dir string) (AppConfig, error) {
+
+	var config AppConfig
+
+	config.Mode = "server"
+
+	if err := SetConfig(dir, &config); err != nil {
+		return config, err
+	}
+
+	return config, nil
+
+}
+
+func SetConfig(dir string, config *AppConfig) error {
 	if !strings.HasSuffix(dir, "/") {
 		dir = dir + "/"
 	}
@@ -36,21 +59,18 @@ func GetClientConfig(dir string) (AppConfig, error) {
 	filePaths["connections"]	= dir + "connections"
 	filePaths["port"] 			= dir + "port"
 
-	if err := ReadClientConnectionConfig(filePaths["connections"], &config); err != nil {
-		return config, err
+	if err := ReadConnectionConfig(filePaths["connections"], config); err != nil {
+		return err
 	}
 
-	if err := ReadPortConfig(filePaths["port"], &config); err != nil {
-		return config, err
+	if err := ReadPortConfig(filePaths["port"], config); err != nil {
+		return err
 	}
 
-	logger.Info(config.Port)
-
-	return config, nil
-
+	return nil
 }
 
-func ReadClientConnectionConfig(file string, config *AppConfig) error {
+func ReadConnectionConfig(file string, config *AppConfig) error {
 	if _, err := os.Stat(file); os.IsNotExist(err) {
 		return err
 	}
