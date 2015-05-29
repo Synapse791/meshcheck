@@ -11,7 +11,13 @@ import (
 
 type AppConfig struct {
 	Port			string
-	Connections		[]string
+	Connections		[]Connection
+}
+
+type Connection struct {
+	Success		bool		`json:"success"`
+	IpAddress	string		`json:"ip_address"`
+	Port		string		`json:"port"`
 }
 
 func GetClientConfig(dir string) (AppConfig, error) {
@@ -62,7 +68,14 @@ func ReadClientConnectionConfig(file string, config *AppConfig) error {
 			logger.Fatal("Invalid connection ("+line+"). Connections should be a list of IP:PORT combinations")
 		}
 
-		config.Connections = append(config.Connections, line)
+		var conn Connection
+
+		data := strings.Split(line, ":")
+
+		conn.IpAddress = data[0]
+		conn.Port      = data[1]
+
+		config.Connections = append(config.Connections, conn)
 
 	}
 

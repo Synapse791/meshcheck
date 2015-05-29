@@ -14,8 +14,8 @@ type Client struct {
 }
 
 type Response struct {
-	Success	bool		`json:"success"`
-	Errors  []string	`json:"errors"`
+	Success			bool				`json:"success"`
+	Connections		[]config.Connection	`json:"connections"`
 }
 
 func GetInitMessage() string {
@@ -48,21 +48,30 @@ func (c Client) Listen() {
 
 func (c *Client) ScanPorts() *Response {
 
-	resp := &Response{}
-
-	for _, address := range c.Config.Connections {
-		logger.Info("Checking " + address)
-		check := c.CheckConnection(address)
-
-		if !check {
-			resp.Errors = append(resp.Errors, "Connection " + address + " failed")
-		}
+	resp := &Response{
+		true,
+		c.Config.Connections,
 	}
 
-	if len(resp.Errors) > 0 {
-		resp.Success = false
-	} else {
-		resp.Success = true
+	for count, connection := range c.Config.Connections {
+
+		address := connection.IpAddress + ":" + connection.Port
+
+		check := c.CheckConnection(address)
+
+		if check {
+			resp.Connections[count].Success = true
+			logger.Info("OK:     " + address)
+		} else {
+			logger.Warning("Failed: " + address)
+		}
+
+	}
+
+	for _, check := range resp.Connections {
+		if check.Success == false {
+			resp.Success = false
+		}
 	}
 
 	return resp
@@ -72,13 +81,11 @@ func (c *Client) ScanPorts() *Response {
 func (c *Client) CheckConnection(addr string) bool {
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", addr)
 	if err != nil {
-		logger.Warning("Failed to resolve " + addr)
 		return false
 	}
 
 	conn, err := net.DialTCP("tcp", nil, tcpAddr)
 	if err != nil {
-		logger.Warning("Failed to connect to " + addr)
 		return false
 	}
 
