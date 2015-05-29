@@ -10,7 +10,7 @@ import (
 )
 
 type Client struct {
-	Config		config.ClientConfig
+	Config		config.AppConfig
 }
 
 type Response struct {

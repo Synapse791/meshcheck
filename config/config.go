@@ -9,14 +9,14 @@ import (
 	"github.com/Synapse791/meshcheck/logger"
 )
 
-type ClientConfig struct {
+type AppConfig struct {
 	Port			string
 	Connections		[]string
 }
 
-func GetClientConfig(dir string) (ClientConfig, error) {
+func GetClientConfig(dir string) (AppConfig, error) {
 
-	var config ClientConfig
+	var config AppConfig
 
 	if !strings.HasSuffix(dir, "/") {
 		dir = dir + "/"
@@ -31,7 +31,7 @@ func GetClientConfig(dir string) (ClientConfig, error) {
 		return config, err
 	}
 
-	if err := ReadClientPortConfig(filePaths["port"], &config); err != nil {
+	if err := ReadPortConfig(filePaths["port"], &config); err != nil {
 		return config, err
 	}
 
@@ -39,7 +39,7 @@ func GetClientConfig(dir string) (ClientConfig, error) {
 
 }
 
-func ReadClientConnectionConfig(file string, config *ClientConfig) error {
+func ReadClientConnectionConfig(file string, config *AppConfig) error {
 	if _, err := os.Stat(file); os.IsNotExist(err) {
 		return err
 	}
@@ -69,7 +69,7 @@ func ReadClientConnectionConfig(file string, config *ClientConfig) error {
 	return nil
 }
 
-func ReadClientPortConfig(file string, config *ClientConfig) error {
+func ReadPortConfig(file string, config *AppConfig) error {
 
 	if _, err := os.Stat(file); os.IsNotExist(err) {
 
