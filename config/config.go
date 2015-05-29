@@ -25,6 +25,8 @@ func GetClientConfig(dir string) (AppConfig, error) {
 
 	var config AppConfig
 
+	config.Mode = "client"
+
 	if !strings.HasSuffix(dir, "/") {
 		dir = dir + "/"
 	}
@@ -41,6 +43,8 @@ func GetClientConfig(dir string) (AppConfig, error) {
 	if err := ReadPortConfig(filePaths["port"], &config); err != nil {
 		return config, err
 	}
+
+	logger.Info(config.Port)
 
 	return config, nil
 
@@ -87,8 +91,16 @@ func ReadPortConfig(file string, config *AppConfig) error {
 
 	if _, err := os.Stat(file); os.IsNotExist(err) {
 
-		logger.Info("Setting default port (6600)")
-		config.Port = ":6600"
+		if config.Mode == "client" {
+			logger.Info("Setting default client port (6600)")
+			config.Port = ":6600"
+		} else if config.Mode == "server" {
+			logger.Info("Setting default server port (6800)")
+			config.Port = ":6800"
+		} else {
+			logger.Fatal("Unkown Mode")
+		}
+
 
 	} else {
 

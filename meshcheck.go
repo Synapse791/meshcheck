@@ -2,7 +2,6 @@ package main
 
 import (
 	"os"
-	"github.com/Synapse791/meshcheck/config"
 	"github.com/Synapse791/meshcheck/logger"
 	"github.com/Synapse791/meshcheck/client"
 	"github.com/Synapse791/meshcheck/server"
@@ -21,17 +20,14 @@ func main() {
 	if mode == "client" {
 		logger.Info(client.GetInitMessage())
 
-		config, err := config.GetClientConfig(configDir)
+		c := client.NewClient()
 
-		if err != nil {
+		if check := c.SetConfig(configDir); check != true {
 			logger.Fatal("Failed to read config files")
 		} else {
 			logger.Info("Config set")
 		}
 
-		c := client.NewClient()
-
-		c.Config = config
 		c.Listen()
 
 	} else if mode == "server" {

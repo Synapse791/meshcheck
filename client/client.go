@@ -26,6 +26,20 @@ func NewClient() *Client {
 	return &Client{}
 }
 
+func (c *Client) SetConfig(configDir string) bool {
+
+	config, err := config.GetClientConfig(configDir)
+
+	if err != nil {
+		return false
+	}
+
+	c.Config = config
+
+	return true
+
+}
+
 func (c Client) Listen() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request){
 
