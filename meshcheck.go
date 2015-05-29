@@ -32,6 +32,17 @@ func main() {
 
 	} else if mode == "server" {
 		logger.Info(server.GetInitMessage())
+
+		s := server.NewServer()
+
+		if check := s.SetConfig(configDir); check != true {
+			logger.Fatal("Failed to read config files")
+		} else {
+			logger.Info("Config set")
+		}
+
+		s.Listen()
+
 	} else {
 		logger.Fatal("Invalid mode {client|server}")
 	}
