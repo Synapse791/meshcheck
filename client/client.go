@@ -10,12 +10,12 @@ import (
 )
 
 type Client struct {
-	Config		config.AppConfig
+	Config  config.AppConfig
 }
 
-type Response struct {
-	Success			bool				`json:"success"`
-	Connections		[]config.Connection	`json:"connections"`
+type ClientResponse struct {
+	Success         bool                `json:"success"`
+	Connections     []config.Connection `json:"connections"`
 }
 
 func GetInitMessage() string {
@@ -46,9 +46,9 @@ func (c Client) Listen() {
 	http.ListenAndServe(c.Config.Port, nil)
 }
 
-func (c *Client) ScanPorts() *Response {
+func (c *Client) ScanPorts() *ClientResponse {
 
-	resp := &Response{
+	resp := &ClientResponse {
 		true,
 		c.Config.Connections,
 	}
