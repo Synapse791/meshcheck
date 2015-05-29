@@ -10,14 +10,15 @@ import (
 )
 
 type AppConfig struct {
-	Port			string
-	Connections		[]Connection
+	Port            string
+	Mode            string
+	Connections     []Connection
 }
 
 type Connection struct {
-	Success		bool		`json:"success"`
-	IpAddress	string		`json:"ip_address"`
-	Port		string		`json:"port"`
+	Success     bool    `json:"success"`
+	IpAddress   string  `json:"ip_address"`
+	Port        string  `json:"port"`
 }
 
 func GetClientConfig(dir string) (AppConfig, error) {
