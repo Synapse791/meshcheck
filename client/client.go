@@ -86,7 +86,3 @@ func (c *Client) CheckConnection(addr string) bool {
 
 	return true
 }
-
-func (c *Client) BuildAddress(ip string, port string) string {
-	return ip + ":" + port
-}
