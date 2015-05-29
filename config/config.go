@@ -27,15 +27,26 @@ func GetClientConfig(dir string) (ClientConfig, error) {
 	filePaths["connections"]	= dir + "connections"
 	filePaths["port"] 			= dir + "port"
 
-	for _, fileCheck := range filePaths {
-		if _, err := os.Stat(fileCheck); os.IsNotExist(err) {
-			return config, err
-		}
+	if err := ReadClientConnectionConfig(filePaths["connections"], &config); err != nil {
+		return config, err
 	}
 
-	connFile, connErr := os.Open(filePaths["connections"])
+	if err := ReadClientPortConfig(filePaths["port"], &config); err != nil {
+		return config, err
+	}
+
+	return config, nil
+
+}
+
+func ReadClientConnectionConfig(file string, config *ClientConfig) error {
+	if _, err := os.Stat(file); os.IsNotExist(err) {
+		return err
+	}
+
+	connFile, connErr := os.Open(file)
 	if connErr != nil {
-		return config, connErr
+		return connErr
 	}
 
 	defer connFile.Close()
@@ -55,14 +66,27 @@ func GetClientConfig(dir string) (ClientConfig, error) {
 
 	}
 
-	port, portErr := ioutil.ReadFile(filePaths["port"])
-	if portErr != nil {
-		return config, portErr
+	return nil
+}
+
+func ReadClientPortConfig(file string, config *ClientConfig) error {
+
+	if _, err := os.Stat(file); os.IsNotExist(err) {
+
+		logger.Info("Setting default port (6600)")
+		config.Port = ":6600"
+
+	} else {
+
+		port, portErr := ioutil.ReadFile(file)
+		if portErr != nil {
+			return portErr
+		}
+
+		config.Port = ":" + string(port)
+		config.Port = strings.TrimSpace(config.Port)
+
 	}
 
-	config.Port = ":" + string(port)
-	config.Port = strings.TrimSpace(config.Port)
-
-	return config, nil
-
+	return nil
 }
