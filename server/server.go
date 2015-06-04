@@ -20,6 +20,18 @@ type ServerResponse struct {
 	Errors              []string                  `json:"errors"`
 }
 
+//TODO Implement the following response structure
+//type ServerResponse struct {
+//	Success     bool                `json:"success"`
+//	Connections ResponseConnections `json:"connections"`
+//	Errors      []string            `json:"errors"`
+//}
+//
+//type ResponseConnections struct {
+//	Successful []config.Connection `json:"successful"`
+//	Failed     []config.Connection `json:"failed"`
+//}
+
 func GetInitMessage() string {
 	return "Server mode set"
 }
@@ -47,7 +59,7 @@ func (s Server) Listen() {
 		response := s.PingClients()
 
 		if response.Success == false {
-
+			//TODO set Status Code
 		}
 
 		output, err := json.Marshal(response)
