@@ -21,6 +21,12 @@ type Connection struct {
 	Port        string  `json:"port"`
 }
 
+type FailedConnection struct {
+	ClientAddress     string  `json:"client_address"`
+	ConnectionAddress string  `json:"connection_address"`
+	Port              string  `json:"port"`
+}
+
 func GetClientConfig(dir string) (AppConfig, error) {
 
 	var config AppConfig

@@ -3,9 +3,11 @@ package server
 import (
 	"fmt"
 	"net/http"
+	"io/ioutil"
 	"github.com/Synapse791/meshcheck/config"
 	"github.com/Synapse791/meshcheck/logger"
 	"encoding/json"
+	"github.com/Synapse791/meshcheck/client"
 )
 
 type Server struct {
@@ -13,8 +15,9 @@ type Server struct {
 }
 
 type ServerResponse struct {
-	Success             bool                `json:"success"`
-	FailedConnections   []config.Connection	`json:"failed_connections"`
+	Success             bool                      `json:"success"`
+	FailedConnections   []config.FailedConnection `json:"failed_connections"`
+	Errors              []string                  `json:"errors"`
 }
 
 func GetInitMessage() string {
@@ -43,6 +46,10 @@ func (s Server) Listen() {
 
 		response := s.PingClients()
 
+		if response.Success == false {
+
+		}
+
 		output, err := json.Marshal(response)
 		if err != nil {
 			logger.Warning("Failed to encode response")
@@ -58,11 +65,74 @@ func (s Server) Listen() {
 	http.ListenAndServe(s.Config.Port, nil)
 }
 
-func (s Server) PingClients() *ServerResponse {
+func (s Server) PingClients() ServerResponse {
 
-	return &ServerResponse{
-		true,
-		nil,
+	var resp ServerResponse
+	resp.Success = true
+
+	for _, conn := range s.Config.Connections {
+
+		address := "http://" + conn.IpAddress + ":" + conn.Port
+
+		logger.Info("Calling " + address)
+
+		data, err := http.Get(address)
+		if err != nil {
+			msg := "Failed to connect to " + address
+			logger.Warning(msg)
+			resp.Errors = append(resp.Errors, msg)
+			resp.Success = false
+			return resp
+		}
+
+		logger.Info("Got response")
+
+		defer data.Body.Close()
+		body, bodyErr := ioutil.ReadAll(data.Body)
+		if bodyErr != nil {
+			msg := "Failed to read response body from " + address
+			logger.Warning(msg)
+			resp.Errors = append(resp.Errors, msg)
+			resp.Success = false
+			return resp
+		}
+
+		var cResp client.ClientResponse
+
+		jsonErr := json.Unmarshal(body, &cResp)
+		if jsonErr != nil {
+			msg := "Failed to decode client response from " + address
+			logger.Warning(msg)
+			resp.Errors = append(resp.Errors, msg)
+			resp.Success = false
+			return resp
+		}
+
+		s.ParseClientResponse(address, cResp, &resp)
+
+		logger.Info(address + " responded: \n" + string(body))
+	}
+
+	return resp
+
+}
+
+func (s Server) ParseClientResponse(cAddr string, cResp client.ClientResponse, sResp *ServerResponse) {
+
+	if cResp.Success == false {
+		sResp.Success = false
+		for _, conn := range cResp.Connections {
+			if conn.Success == false {
+
+				var failure config.FailedConnection
+
+				failure.ClientAddress     = cAddr
+				failure.ConnectionAddress = conn.IpAddress
+				failure.Port              = conn.Port
+
+				sResp.FailedConnections = append(sResp.FailedConnections, failure)
+			}
+		}
 	}
 
 }
