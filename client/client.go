@@ -51,6 +51,8 @@ func (c Client) Listen() {
 			return
 		}
 
+		w.Header().Add("Content-Type", "application/json")
+
 		fmt.Fprint(w, string(output))
 
 	})
