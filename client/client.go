@@ -57,7 +57,7 @@ func (c Client) Listen() {
 
 	})
 
-	logger.Info("Listening on port " + c.Config.Port)
+	logger.Info(fmt.Sprintf("Listening on port %s", c.Config.Port))
 
 	http.ListenAndServe(c.Config.Port, nil)
 }
@@ -71,15 +71,15 @@ func (c *Client) ScanPorts() *ClientResponse {
 
 	for count, connection := range c.Config.Connections {
 
-		address := connection.ToAddress + ":" + connection.Port
+		address := fmt.Sprintf("%s:%s", connection.ToAddress, connection.Port)
 
 		check := c.CheckConnection(address)
 
 		if check {
 			resp.Connections[count].Success = true
-			logger.Info("OK:     " + address)
+			logger.Info(fmt.Sprintf("OK:     %s", address))
 		} else {
-			logger.Warning("Failed: " + address)
+			logger.Warning(fmt.Sprintf("Failed: ", address))
 		}
 
 	}
