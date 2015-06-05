@@ -69,6 +69,8 @@ func (c *Client) ScanPorts() *ClientResponse {
 		c.Config.Connections,
 	}
 
+	logger.Info("Running connection list")
+
 	for count, connection := range c.Config.Connections {
 
 		address := fmt.Sprintf("%s:%s", connection.ToAddress, connection.Port)
@@ -77,9 +79,9 @@ func (c *Client) ScanPorts() *ClientResponse {
 
 		if check {
 			resp.Connections[count].Success = true
-			logger.Info(fmt.Sprintf("OK:     %s", address))
+			logger.Info(fmt.Sprintf("%s -> OK", address))
 		} else {
-			logger.Warning(fmt.Sprintf("Failed: ", address))
+			logger.Warning(fmt.Sprintf("%s -> FAILED", address))
 		}
 
 	}
