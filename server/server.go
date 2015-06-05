@@ -15,22 +15,15 @@ type Server struct {
 }
 
 type ServerResponse struct {
-	Success             bool                      `json:"success"`
-	FailedConnections   []config.FailedConnection `json:"failed_connections"`
-	Errors              []string                  `json:"errors"`
+	Success     bool                `json:"success"`
+	Connections ResponseConnections `json:"connections"`
+	Errors      []string            `json:"errors"`
 }
 
-//TODO Implement the following response structure
-//type ServerResponse struct {
-//	Success     bool                `json:"success"`
-//	Connections ResponseConnections `json:"connections"`
-//	Errors      []string            `json:"errors"`
-//}
-//
-//type ResponseConnections struct {
-//	Successful []config.Connection `json:"successful"`
-//	Failed     []config.Connection `json:"failed"`
-//}
+type ResponseConnections struct {
+	Successful []config.Connection `json:"successful"`
+	Failed     []config.Connection `json:"failed"`
+}
 
 func GetInitMessage() string {
 	return "Server mode set"
@@ -84,7 +77,7 @@ func (s Server) PingClients() ServerResponse {
 
 	for _, conn := range s.Config.Connections {
 
-		address := "http://" + conn.IpAddress + ":" + conn.Port
+		address := "http://" + conn.ToAddress + ":" + conn.Port
 
 		logger.Info("Calling " + address)
 
@@ -133,17 +126,14 @@ func (s Server) ParseClientResponse(cAddr string, cResp client.ClientResponse, s
 
 	if cResp.Success == false {
 		sResp.Success = false
-		for _, conn := range cResp.Connections {
-			if conn.Success == false {
+	}
 
-				var failure config.FailedConnection
-
-				failure.ClientAddress     = cAddr
-				failure.ConnectionAddress = conn.IpAddress
-				failure.Port              = conn.Port
-
-				sResp.FailedConnections = append(sResp.FailedConnections, failure)
-			}
+	for _, conn := range cResp.Connections {
+		conn.FromAddress = cAddr
+		if conn.Success == false {
+			sResp.Connections.Failed = append(sResp.Connections.Failed, conn)
+		} else {
+			sResp.Connections.Successful = append(sResp.Connections.Successful, conn)
 		}
 	}
 

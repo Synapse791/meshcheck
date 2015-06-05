@@ -71,7 +71,7 @@ func (c *Client) ScanPorts() *ClientResponse {
 
 	for count, connection := range c.Config.Connections {
 
-		address := connection.IpAddress + ":" + connection.Port
+		address := connection.ToAddress + ":" + connection.Port
 
 		check := c.CheckConnection(address)
 

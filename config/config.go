@@ -17,14 +17,9 @@ type AppConfig struct {
 
 type Connection struct {
 	Success     bool    `json:"success"`
-	IpAddress   string  `json:"ip_address"`
+	FromAddress string  `json:"from_address"`
+	ToAddress   string  `json:"to_address"`
 	Port        string  `json:"port"`
-}
-
-type FailedConnection struct {
-	ClientAddress     string  `json:"client_address"`
-	ConnectionAddress string  `json:"connection_address"`
-	Port              string  `json:"port"`
 }
 
 func GetClientConfig(dir string) (AppConfig, error) {
@@ -103,7 +98,7 @@ func ReadConnectionConfig(file string, config *AppConfig) error {
 
 		data := strings.Split(line, ":")
 
-		conn.IpAddress = data[0]
+		conn.ToAddress = data[0]
 		conn.Port      = data[1]
 
 		config.Connections = append(config.Connections, conn)
