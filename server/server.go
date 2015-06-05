@@ -26,7 +26,7 @@ type ResponseConnections struct {
 }
 
 func GetInitMessage() string {
-	return "Server mode set"
+	return "Running in Server mode"
 }
 
 func NewServer() *Server {
@@ -65,7 +65,7 @@ func (s Server) Listen() {
 
 	})
 
-	logger.Info("Listening on port " + s.Config.Port)
+	logger.Info(fmt.Sprintf("Listening on port %s", s.Config.Port))
 
 	http.ListenAndServe(s.Config.Port, nil)
 }
@@ -77,25 +77,23 @@ func (s Server) PingClients() ServerResponse {
 
 	for _, conn := range s.Config.Connections {
 
-		address := "http://" + conn.ToAddress + ":" + conn.Port
+		address := fmt.Sprintf("http://%s:%s", conn.ToAddress, conn.Port)
 
-		logger.Info("Calling " + address)
+		logger.Info(fmt.Sprintf("Calling %s", address))
 
 		data, err := http.Get(address)
 		if err != nil {
-			msg := "Failed to connect to " + address
+			msg := fmt.Sprintf("Failed to connect to %s", address)
 			logger.Warning(msg)
 			resp.Errors = append(resp.Errors, msg)
 			resp.Success = false
 			return resp
 		}
 
-		logger.Info("Got response")
-
 		defer data.Body.Close()
 		body, bodyErr := ioutil.ReadAll(data.Body)
 		if bodyErr != nil {
-			msg := "Failed to read response body from " + address
+			msg := fmt.Sprintf("Failed to read response body from %s", address)
 			logger.Warning(msg)
 			resp.Errors = append(resp.Errors, msg)
 			resp.Success = false
@@ -106,16 +104,16 @@ func (s Server) PingClients() ServerResponse {
 
 		jsonErr := json.Unmarshal(body, &cResp)
 		if jsonErr != nil {
-			msg := "Failed to decode client response from " + address
+			msg := fmt.Sprintf("Failed to decode client response from %s", address)
 			logger.Warning(msg)
 			resp.Errors = append(resp.Errors, msg)
 			resp.Success = false
 			return resp
 		}
 
-		s.ParseClientResponse(address, cResp, &resp)
+		s.ParseClientResponse(conn.ToAddress, cResp, &resp)
 
-		logger.Info(address + " responded: \n" + string(body))
+		logger.Info(fmt.Sprintf("%s responded: %t", address, cResp.Success))
 	}
 
 	return resp
