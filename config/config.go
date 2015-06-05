@@ -89,7 +89,10 @@ func ReadConnectionConfig(file string, config *AppConfig) error {
 	for scanner.Scan() {
 		line := scanner.Text()
 
-		match, _ := regexp.MatchString("[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}:[0-9]+", line)
+		match, regErr := regexp.MatchString("[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}:[0-9]+", line)
+		if regErr != nil {
+			return regErr
+		}
 
 		if !match {
 			logger.Fatal(fmt.Sprintf("Invalid connection (%s). Connections should be a list of IP:PORT combinations", line))
