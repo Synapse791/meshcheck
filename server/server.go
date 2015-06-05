@@ -53,10 +53,6 @@ func (s Server) Listen() {
 
 		response := s.PingClients()
 
-		if response.Success == false {
-			//TODO set Status Code
-		}
-
 		output, err := json.Marshal(response)
 		if err != nil {
 			logger.Warning("Failed to encode response")
