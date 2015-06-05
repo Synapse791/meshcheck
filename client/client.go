@@ -43,6 +43,8 @@ func (c *Client) SetConfig(configDir string) bool {
 func (c Client) Listen() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request){
 
+		logger.Info(fmt.Sprintf("Recieved call from %s", r.RemoteAddr))
+
 		response := c.ScanPorts()
 
 		output, err := json.Marshal(response)

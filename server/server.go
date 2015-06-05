@@ -49,6 +49,8 @@ func (s *Server) SetConfig(configDir string) bool {
 func (s Server) Listen() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request){
 
+		logger.Info(fmt.Sprintf("Recieved call from %s", r.RemoteAddr))
+
 		response := s.PingClients()
 
 		if response.Success == false {
