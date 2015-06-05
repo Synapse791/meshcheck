@@ -1,15 +1,18 @@
 package logger
 
-import "log"
+import (
+	"fmt"
+	"log"
+)
 
 func Fatal(msg string) {
-	log.Fatal("[FATAL] " + msg)
+	log.Fatal(fmt.Sprintf("[FATAL] %s", msg))
 }
 
 func Warning(msg string) {
-	log.Println("[WARN]  " + msg)
+	log.Printf("[WARN]  %s", msg)
 }
 
 func Info(msg string) {
-	log.Println("[INFO]  " + msg)
+	log.Printf("[INFO]  %s", msg)
 }
