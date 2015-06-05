@@ -7,6 +7,7 @@ import (
 	"strings"
 	"regexp"
 	"github.com/Synapse791/meshcheck/logger"
+	"fmt"
 )
 
 type AppConfig struct {
@@ -57,8 +58,8 @@ func SetConfig(dir string, config *AppConfig) error {
 
 	filePaths := make(map[string]string)
 
-	filePaths["connections"]	= dir + "connections"
-	filePaths["port"] 			= dir + "port"
+	filePaths["connections"] = fmt.Sprintf("%sconnections", dir)
+	filePaths["port"]        = fmt.Sprintf("%sport", dir)
 
 	if err := ReadConnectionConfig(filePaths["connections"], config); err != nil {
 		return err
@@ -91,7 +92,7 @@ func ReadConnectionConfig(file string, config *AppConfig) error {
 		match, _ := regexp.MatchString("[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}:[0-9]+", line)
 
 		if !match {
-			logger.Fatal("Invalid connection ("+line+"). Connections should be a list of IP:PORT combinations")
+			logger.Fatal(fmt.Sprintf("Invalid connection (%s). Connections should be a list of IP:PORT combinations", line))
 		}
 
 		var conn Connection
@@ -130,7 +131,7 @@ func ReadPortConfig(file string, config *AppConfig) error {
 			return portErr
 		}
 
-		config.Port = ":" + string(port)
+		config.Port = fmt.Sprintf(":%s", port)
 		config.Port = strings.TrimSpace(config.Port)
 
 	}
