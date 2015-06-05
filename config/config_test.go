@@ -22,3 +22,29 @@ func TestReadPortConfigWithFile(t *testing.T) {
 	}
 
 }
+
+func TestReadPortConfigServerWithoutFile(t *testing.T) {
+	var testConfig AppConfig
+
+	testConfig.Mode = "server"
+
+	ReadPortConfig("not_exist", &testConfig)
+
+	if testConfig.Port != ":6800" {
+		t.Error(fmt.Sprintf("expected %s to be :6800", testConfig.Port))
+	}
+
+}
+
+func TestReadPortConfigClientWithoutFile(t *testing.T) {
+	var testConfig AppConfig
+
+	testConfig.Mode = "client"
+
+	ReadPortConfig("not_exist", &testConfig)
+
+	if testConfig.Port != ":6600" {
+		t.Error(fmt.Sprintf("expected %s to be :6600", testConfig.Port))
+	}
+
+}
