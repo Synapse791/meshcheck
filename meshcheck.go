@@ -2,7 +2,7 @@ package main
 
 import (
 	"os"
-	"fmt"
+	"github.com/Synapse791/meshcheck/logger"
 	"github.com/Synapse791/meshcheck/client"
 	"github.com/Synapse791/meshcheck/server"
 )
@@ -10,13 +10,41 @@ import (
 func main() {
 	args := os.Args[1:]
 
+	if len(args) != 2 {
+		logger.Fatal("Missing arguments. Must pass mode and config directory. Example: meshcheck client /etc/meshcheck/conf")
+	}
+
 	mode := args[0]
+	configDir := args[1]
 
 	if mode == "client" {
-		fmt.Println(client.GetHelp())
+		logger.Info(client.GetInitMessage())
+
+		c := client.NewClient()
+
+		if check := c.SetConfig(configDir); check != true {
+			logger.Fatal("Failed to read config files")
+		} else {
+			logger.Info("Config set")
+		}
+
+		c.Listen()
+
 	} else if mode == "server" {
-		fmt.Println(server.GetHelp())
+		logger.Info(server.GetInitMessage())
+
+		s := server.NewServer()
+
+		if check := s.SetConfig(configDir); check != true {
+			logger.Fatal("Failed to read config files")
+		} else {
+			logger.Info("Config set")
+		}
+
+		s.Listen()
+
 	} else {
-		fmt.Println("Invalid mode [client|server]")
+		logger.Fatal("Invalid mode {client|server}")
 	}
+
 }
