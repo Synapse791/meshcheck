@@ -74,12 +74,12 @@ func SetConfig(dir string, config *AppConfig) error {
 
 func ReadConnectionConfig(file string, config *AppConfig) error {
 	if _, err := os.Stat(file); os.IsNotExist(err) {
-		return err
+		return fmt.Errorf("os: failed to stat file %s", file)
 	}
 
 	connFile, connErr := os.Open(file)
 	if connErr != nil {
-		return connErr
+		return fmt.Errorf("os: failed to open file %s", file)
 	}
 
 	defer connFile.Close()
@@ -91,7 +91,7 @@ func ReadConnectionConfig(file string, config *AppConfig) error {
 
 		match, regErr := regexp.MatchString("[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}:[0-9]+", line)
 		if regErr != nil {
-			return regErr
+			return fmt.Errorf("regexp: error processing regex")
 		}
 
 		if !match {
