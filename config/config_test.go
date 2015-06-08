@@ -7,6 +7,29 @@ import (
 	"syscall"
 )
 
+func TestReadConnectionConfigWithFile(t *testing.T) {
+	var testConfig AppConfig
+
+	f, err := ioutil.TempFile("", "temp_connection_file")
+	if err != nil { panic(err) }
+	defer syscall.Unlink(f.Name())
+	ioutil.WriteFile(f.Name(), []byte("10.100.1.2:80\n192.168.1.1:5000"), 0644)
+
+	appErr := ReadConnectionConfig(f.Name(), &testConfig)
+
+	if appErr != nil {
+		t.Fatal(appErr.Error())
+	}
+
+	if testConfig.Connections[0].ToAddress != "10.100.1.2" || testConfig.Connections[0].Port != "80" {
+		t.Error(fmt.Sprintf("expected %s to be 10.100.1.2 and %s to be 80", testConfig.Connections[0].ToAddress, testConfig.Connections[0].Port))
+	}
+
+	if testConfig.Connections[1].ToAddress != "192.168.1.1" || testConfig.Connections[1].Port != "5000" {
+		t.Error(fmt.Sprintf("expected %s to be 192.168.1.1 and %s to be 5000", testConfig.Connections[1].ToAddress, testConfig.Connections[1].Port))
+	}
+}
+
 func TestReadPortConfigWithFile(t *testing.T) {
 	var testConfig AppConfig
 
