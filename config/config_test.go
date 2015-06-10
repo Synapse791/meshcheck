@@ -7,6 +7,23 @@ import (
 	"syscall"
 )
 
+func TestFixTrailingSlash(t *testing.T) {
+	with    := "/tmp/"
+	without := "/tmp"
+
+	check_with      := FixTrailingSlash(with)
+	check_without   := FixTrailingSlash(without)
+
+	if check_with != "/tmp/" {
+		t.Errorf("started with %s. Expected %s to be /tmp/", with, check_with)
+	}
+
+	if check_without != "/tmp/" {
+		t.Errorf("started with %s. Expected %s to be /tmp/", without, check_without)
+	}
+
+}
+
 func TestReadConnectionConfigWithFile(t *testing.T) {
 	var testConfig AppConfig
 

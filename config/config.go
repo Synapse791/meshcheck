@@ -52,9 +52,8 @@ func GetServerConfig(dir string) (AppConfig, error) {
 }
 
 func SetConfig(dir string, config *AppConfig) error {
-	if !strings.HasSuffix(dir, "/") {
-		dir = dir + "/"
-	}
+
+	dir = FixTrailingSlash(dir)
 
 	filePaths := make(map[string]string)
 
@@ -140,4 +139,12 @@ func ReadPortConfig(file string, config *AppConfig) error {
 	}
 
 	return nil
+}
+
+func FixTrailingSlash(dir string) string {
+	if !strings.HasSuffix(dir, "/") {
+		dir = dir + "/"
+	}
+
+	return dir
 }
