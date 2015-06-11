@@ -88,3 +88,24 @@ func TestReadPortConfigClientWithoutFile(t *testing.T) {
 	}
 
 }
+
+func TestReadPortConfigInvalidMode(t *testing.T) {
+	var testConfig AppConfig
+
+	testConfig.Mode = "not_mode"
+
+	err := ReadPortConfig("not_exist", &testConfig)
+
+	if err == nil {
+		t.Errorf("expected failure but got success")
+	}
+
+	if err != nil && err.Error() != "Unknown mode: not_mode" {
+		t.Errorf("expected error message 'Unknown mode: not_mode' got '%s'", err.Error())
+	}
+
+	if err != nil && err.Error() == "Unknown mode: not_mode" {
+		t.Errorf("expected error message 'Unknown mode: not_mode' got '%s'", err.Error())
+	}
+
+}

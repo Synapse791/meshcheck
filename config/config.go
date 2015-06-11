@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"github.com/Synapse791/meshcheck/logger"
 	"fmt"
+	"errors"
 )
 
 type AppConfig struct {
@@ -122,9 +123,8 @@ func ReadPortConfig(file string, config *AppConfig) error {
 			logger.Info("Setting default server port (6800)")
 			config.Port = ":6800"
 		} else {
-			logger.Fatal("Unkown Mode")
+			return errors.New(fmt.Sprintf("Unknown mode: %s", config.Mode))
 		}
-
 
 	} else {
 

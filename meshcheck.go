@@ -22,8 +22,8 @@ func main() {
 
 		c := client.NewClient()
 
-		if check := c.SetConfig(configDir); check != true {
-			logger.Fatal("Failed to read config files")
+		if configErr := c.SetConfig(configDir); configErr != nil {
+			logger.Fatal(configErr.Error())
 		} else {
 			logger.Info("Config set")
 		}
@@ -35,8 +35,8 @@ func main() {
 
 		s := server.NewServer()
 
-		if check := s.SetConfig(configDir); check != true {
-			logger.Fatal("Failed to read config files")
+		if configErr := s.SetConfig(configDir); configErr != nil {
+			logger.Fatal(configErr.Error())
 		} else {
 			logger.Info("Config set")
 		}

@@ -33,17 +33,17 @@ func NewServer() *Server {
 	return &Server{}
 }
 
-func (s *Server) SetConfig(configDir string) bool {
+func (s *Server) SetConfig(configDir string) error {
 
 	config, err := config.GetServerConfig(configDir)
 
 	if err != nil {
-		return false
+		return err
 	}
 
 	s.Config = config
 
-	return true
+	return nil
 }
 
 func (s Server) Listen() {

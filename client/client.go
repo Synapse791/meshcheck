@@ -26,17 +26,17 @@ func NewClient() *Client {
 	return &Client{}
 }
 
-func (c *Client) SetConfig(configDir string) bool {
+func (c *Client) SetConfig(configDir string) error {
 
 	config, err := config.GetClientConfig(configDir)
 
 	if err != nil {
-		return false
+		return err
 	}
 
 	c.Config = config
 
-	return true
+	return nil
 
 }
 
