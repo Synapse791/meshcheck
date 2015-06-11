@@ -25,12 +25,23 @@ func TestFixTrailingSlash(t *testing.T) {
 }
 
 func TestReadConnectionConfigWithFile(t *testing.T) {
+	var testCases = []struct {
+		Ip      string
+		Port    string
+	}{
+		{"10.100.1.2",  "80"},
+		{"192.168.1.1", "5000"},
+		{"10.100.2.3",  "22"},
+	}
+
+	testString := fmt.Sprintf("%s:%s\n%s:%s\n%s:%s", testCases[0].Ip, testCases[0].Port, testCases[1].Ip, testCases[1].Port, testCases[2].Ip, testCases[2].Port)
+
 	var testConfig AppConfig
 
 	f, err := ioutil.TempFile("", "temp_connection_file")
 	if err != nil { panic(err) }
 	defer syscall.Unlink(f.Name())
-	ioutil.WriteFile(f.Name(), []byte("10.100.1.2:80\n192.168.1.1:5000"), 0644)
+	ioutil.WriteFile(f.Name(), []byte(testString), 0644)
 
 	appErr := ReadConnectionConfig(f.Name(), &testConfig)
 
@@ -38,13 +49,15 @@ func TestReadConnectionConfigWithFile(t *testing.T) {
 		t.Fatal(appErr.Error())
 	}
 
-	if testConfig.Connections[0].ToAddress != "10.100.1.2" || testConfig.Connections[0].Port != "80" {
-		t.Error(fmt.Sprintf("expected %s to be 10.100.1.2 and %s to be 80", testConfig.Connections[0].ToAddress, testConfig.Connections[0].Port))
+	for caseNum, tc := range testCases {
+		if testConfig.Connections[caseNum].ToAddress != tc.Ip {
+			t.Errorf("expected %s to be %s", testConfig.Connections[caseNum].ToAddress, tc.Ip)
+		}
+		if testConfig.Connections[caseNum].Port != tc.Port {
+			t.Errorf("expected %s to be %s", testConfig.Connections[caseNum].Port, tc.Port)
+		}
 	}
 
-	if testConfig.Connections[1].ToAddress != "192.168.1.1" || testConfig.Connections[1].Port != "5000" {
-		t.Error(fmt.Sprintf("expected %s to be 192.168.1.1 and %s to be 5000", testConfig.Connections[1].ToAddress, testConfig.Connections[1].Port))
-	}
 }
 
 func TestReadPortConfigWithFile(t *testing.T) {
@@ -101,10 +114,6 @@ func TestReadPortConfigInvalidMode(t *testing.T) {
 	}
 
 	if err != nil && err.Error() != "Unknown mode: not_mode" {
-		t.Errorf("expected error message 'Unknown mode: not_mode' got '%s'", err.Error())
-	}
-
-	if err != nil && err.Error() == "Unknown mode: not_mode" {
 		t.Errorf("expected error message 'Unknown mode: not_mode' got '%s'", err.Error())
 	}
 
