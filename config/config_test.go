@@ -5,7 +5,94 @@ import (
 	"fmt"
 	"io/ioutil"
 	"syscall"
+	"strings"
+	"os"
 )
+
+func TestGetServerConfig(t *testing.T) {
+	var testCases = []struct {
+		Ip      string
+		Port    string
+	}{
+		{"10.100.1.2",  "6789"},
+		{"192.168.1.1", "6600"},
+		{"10.100.2.3",  "6600"},
+	}
+
+	testString := fmt.Sprintf("%s:%s\n%s:%s\n%s:%s", testCases[0].Ip, testCases[0].Port, testCases[1].Ip, testCases[1].Port, testCases[2].Ip, testCases[2].Port)
+
+	conn_file, err := os.Create("/tmp/connections")
+	if err != nil { panic(err) }
+	defer syscall.Unlink(conn_file.Name())
+	ioutil.WriteFile(conn_file.Name(), []byte(testString), 0644)
+
+	port_file, err := os.Create("/tmp/port")
+	if err != nil { panic(err) }
+	defer syscall.Unlink(port_file.Name())
+	ioutil.WriteFile(port_file.Name(), []byte("8000"), 0644)
+
+	testConfig, err := GetClientConfig("/tmp/")
+
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	if testConfig.Port != ":8000" {
+		t.Errorf("expected '%s' to be ':8000'", testConfig.Port)
+	}
+
+	for caseNum, tc := range testCases {
+		if testConfig.Connections[caseNum].ToAddress != tc.Ip {
+			t.Errorf("expected '%s' to be '%s'", testConfig.Connections[caseNum].ToAddress, tc.Ip)
+		}
+		if testConfig.Connections[caseNum].Port != tc.Port {
+			t.Errorf("expected '%s' to be '%s'", testConfig.Connections[caseNum].Port, tc.Port)
+		}
+	}
+
+}
+
+//TODO TestGetServerConfigError
+
+func TestGetClientConfig(t *testing.T) {
+	var testCases = []struct {
+		Ip      string
+		Port    string
+	}{
+		{"10.100.10.1", "22"},
+		{"10.100.10.1", "80"},
+		{"10.100.10.2", "22"},
+	}
+
+	testString := fmt.Sprintf("%s:%s\n%s:%s\n%s:%s", testCases[0].Ip, testCases[0].Port, testCases[1].Ip, testCases[1].Port, testCases[2].Ip, testCases[2].Port)
+
+	conn_file, err := os.Create("/tmp/connections")
+	if err != nil { panic(err) }
+	defer syscall.Unlink(conn_file.Name())
+	ioutil.WriteFile(conn_file.Name(), []byte(testString), 0644)
+
+	testConfig, err := GetServerConfig("/tmp/")
+
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	if testConfig.Port != ":6800" {
+		t.Errorf("expected %s to be :6800", testConfig.Port)
+	}
+
+	for caseNum, tc := range testCases {
+		if testConfig.Connections[caseNum].ToAddress != tc.Ip {
+			t.Errorf("expected %s to be %s", testConfig.Connections[caseNum].ToAddress, tc.Ip)
+		}
+		if testConfig.Connections[caseNum].Port != tc.Port {
+			t.Errorf("expected %s to be %s", testConfig.Connections[caseNum].Port, tc.Port)
+		}
+	}
+
+}
+
+//TODO TestGetClientConfigError
 
 func TestFixTrailingSlash(t *testing.T) {
 	with    := "/tmp/"
@@ -56,6 +143,45 @@ func TestReadConnectionConfigWithFile(t *testing.T) {
 		if testConfig.Connections[caseNum].Port != tc.Port {
 			t.Errorf("expected %s to be %s", testConfig.Connections[caseNum].Port, tc.Port)
 		}
+	}
+
+}
+
+func TestReadConnectionConfigWithUnreadableFile(t *testing.T) {
+	var testConfig AppConfig
+
+	f, err := os.Create("/tmp/temp_connections")
+	if err != nil { panic(err) }
+	defer syscall.Unlink(f.Name())
+	ioutil.WriteFile(f.Name(), []byte("10.100.0.0:80"), 0000)
+
+	f.Chmod(0300)
+
+	appErr := ReadConnectionConfig(f.Name(), &testConfig)
+
+	if appErr == nil {
+		t.Error("expected failure got success")
+	}
+
+	if strings.Contains(appErr.Error(), fmt.Sprintf("os: failed to open file %s", f.Name())) == false {
+		t.Errorf("expected failed to open file error, got '%s'", appErr.Error())
+	}
+
+}
+
+//TODO TestReadConnectionConfigWithInvalidRegexFile
+
+func TestReadConnectionConfigWithoutFile(t *testing.T) {
+	var testConfig AppConfig
+
+	appErr := ReadConnectionConfig("not_exist", &testConfig)
+
+	if appErr == nil {
+		t.Error("expected error got success")
+	}
+
+	if appErr != nil && strings.Contains(appErr.Error(), "os: failed to stat file") != true {
+		t.Errorf("expected stat file error, got '%s'", appErr.Error())
 	}
 
 }
